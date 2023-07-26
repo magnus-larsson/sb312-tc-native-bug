@@ -7,7 +7,7 @@ import org.testcontainers.containers.MongoDBContainer;
 
 public abstract class MongoDbTestBase {
 
-  // TODO: Does not native compile! Fails on:
+  // Use of @ServiceConnection makes native tests fail on:
   // org.springframework.boot.autoconfigure.service.connection.ConnectionDetailsNotFoundException: No ConnectionDetails found for source '@ServiceConnection source for MongoDbTestBase.database'
   @ServiceConnection
   private static MongoDBContainer database = new MongoDBContainer("mongo:6.0.4");

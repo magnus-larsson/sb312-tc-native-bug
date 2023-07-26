@@ -17,24 +17,20 @@ import se.magnus.api.exceptions.InvalidInputException;
 import se.magnus.api.exceptions.NotFoundException;
 import se.magnus.microservices.core.product.persistence.ProductEntity;
 import se.magnus.microservices.core.product.persistence.ProductRepository;
-import se.magnus.util.http.ServiceUtil;
 
 @RestController
 public class ProductServiceImpl implements ProductService {
 
   private static final Logger LOG = LoggerFactory.getLogger(ProductServiceImpl.class);
 
-  private final ServiceUtil serviceUtil;
-
   private final ProductRepository repository;
 
   private final ProductMapper mapper;
 
   @Autowired
-  public ProductServiceImpl(ProductRepository repository, ProductMapper mapper, ServiceUtil serviceUtil) {
+  public ProductServiceImpl(ProductRepository repository, ProductMapper mapper) {
     this.repository = repository;
     this.mapper = mapper;
-    this.serviceUtil = serviceUtil;
   }
 
   @Override
@@ -69,8 +65,7 @@ public class ProductServiceImpl implements ProductService {
       .delayElement(Duration.ofSeconds(delay))
       .switchIfEmpty(Mono.error(new NotFoundException("No product found for productId: " + productId)))
       .log(LOG.getName(), FINE)
-      .map(e -> mapper.entityToApi(e))
-      .map(e -> setServiceAddress(e));
+      .map(e -> mapper.entityToApi(e));
   }
 
   @Override
@@ -82,11 +77,6 @@ public class ProductServiceImpl implements ProductService {
 
     LOG.debug("deleteProduct: tries to delete an entity with productId: {}", productId);
     return repository.findByProductId(productId).log(LOG.getName(), FINE).map(e -> repository.delete(e)).flatMap(e -> e);
-  }
-
-  private Product setServiceAddress(Product e) {
-    e.setServiceAddress(serviceUtil.getServiceAddress());
-    return e;
   }
 
   private ProductEntity throwErrorIfBadLuck(ProductEntity entity, int faultPercent) {
